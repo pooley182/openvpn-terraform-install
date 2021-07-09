@@ -88,7 +88,7 @@ do
     ./openvpn-install.sh
     
     rm -f config/${openvpn_user}/${openvpn_user}.ovpn
-    if [ "$MFA_ENABLED" == "TRUE" ] then
+    if [ "$MFA_ENABLED" == "TRUE" ]; then
       rm -f config/${openvpn_user}/${openvpn_user}.gauth.txt
     fi
   fi
@@ -114,7 +114,7 @@ do
   
   mkdir -p config/${username}
   
-  if [ "$MFA_ENABLED" == "TRUE" ] then
+  if [ "$MFA_ENABLED" == "TRUE" ]; then
     generate_mfa "${username}"
 
     #Add additional lines required for Google auth to work.
