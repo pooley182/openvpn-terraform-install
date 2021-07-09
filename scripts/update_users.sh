@@ -68,8 +68,9 @@ USERNAMES="$@"
 
 # Create a list of provisioned OVPN users from existing *.ovpn files
 declare -a ovpn_users
-for ovpn_filename in *.ovpn
+for f in config/*/*.ovpn
 do
+  ovpn_filename=$(basename "$f")
   ovpn_users=("${ovpn_users[@]}" "${ovpn_filename%.*}")
 done
 
