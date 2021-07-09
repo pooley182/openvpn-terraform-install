@@ -8,6 +8,26 @@
 # Set the nullglob option so that the array is empty if there are no matches; see also <https://stackoverflow.com/a/10981499> for details
 shopt -s nullglob
 
+## MFA Variables
+MFA_LABEL='OpenVPN'
+MFA_USER=gauth
+MFA_DIR=/etc/openvpn/google-authenticator
+
+function generate_mfa() {
+  username=$1
+
+  if [ "$username" == "" ]; then
+    echo "ERROR: No user id provided to generate MFA token"
+    exit 1
+  fi
+
+  echo "INFO: Creating local user account ${username}"
+  useradd -s /bin/nologin "$username"
+
+  echo "INFO: Generating MFA Token"
+  su -c "google-authenticator -t -d -w3 -S30 -r3 -R30 -f -l \"${MFA_LABEL}\" -s $MFA_DIR/${username}" - $MFA_USER > ${username}.gauth.txt
+}
+
 # A pint for the person who can do this in one line using readily available Bash primitives!
 function is_in_array {
   array=$2
@@ -66,6 +86,11 @@ do
     export MENU_OPTION="2"
     export CLIENT="${ovpn_user}"
     ./openvpn-install.sh
+    
+    rm -f config/${openvpn_user}/${openvpn_user}.ovpn
+    if [ "$MFA_ENABLED" == "TRUE" ] then
+      rm -f config/${openvpn_user}/${openvpn_user}.gauth.txt
+    fi
   fi
 done
 
@@ -74,7 +99,7 @@ done
 for username in ${USERNAMES}
 do
   # Skip all user names that already have a corresponding OVPN file
-  ovpn_filename="${username}.ovpn"
+  ovpn_filename="config/${username}/${username}.ovpn"
   if [ -f "${ovpn_filename}" ]
   then
       echo "File '${ovpn_filename}' already exists. Skipping."
@@ -86,4 +111,18 @@ do
   export CLIENT="${username}"
   export PASS="1"
   ./openvpn-install.sh
+  
+  mkdir -p config/${username}
+  
+  if [ "$MFA_ENABLED" == "TRUE" ] then
+    generate_mfa "${username}"
+
+    #Add additional lines required for Google auth to work.
+    echo "auth-user-pass" >> ${username}.ovpn
+    echo "auth-nocache" >> ${username}.ovpn
+    mv ${username}.gauth.txt config/${username}/${username}.gauth.txt
+  fi
+  
+  mv ${username}.ovpn config/${username}/${username}.ovpn
+  
 done
