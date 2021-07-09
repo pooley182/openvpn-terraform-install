@@ -80,8 +80,34 @@ EOT
   }
 }
 
-resource "null_resource" "openvpn_update_users_script" {
+resource "null_resource" "openvpn_mfa" {
   depends_on = [null_resource.openvpn_bootstrap]
+  count = var.enable_mfa ? 1 : 0
+
+  connection {
+    type = "ssh"
+    host = aws_instance.openvpn.public_ip
+    user = var.ec2_username
+    port = "22"
+    private_key = file("${path.module}/${var.ssh_private_key_file}")
+    agent = false
+  }
+
+  provisioner "file" {
+    source = "${path.module}/scripts/enable_mfa_support.sh"
+    destination = "/home/${var.ec2_username}/enable_mfa_support.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /home/${var.ec2_username}/enable_mfa_support.sh",
+      "sudo /home/${var.ec2_username}/enable_mfa_support.sh"
+    ]
+  }
+}
+
+resource "null_resource" "openvpn_update_users_script" {
+  depends_on = [null_resource.openvpn_mfa]
 
   triggers = {
     ovpn_users = join(" ", var.ovpn_users)
@@ -121,7 +147,7 @@ resource "null_resource" "openvpn_download_configurations" {
     mkdir -p ${var.ovpn_config_directory};
     scp -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
-        -i ${var.ssh_private_key_file} ${var.ec2_username}@${aws_instance.openvpn.public_ip}:/home/${var.ec2_username}/*.ovpn ${var.ovpn_config_directory}/
+        -i ${var.ssh_private_key_file} ${var.ec2_username}@${aws_instance.openvpn.public_ip}:/home/${var.ec2_username}/configs/* ${var.ovpn_config_directory}/
     
 EOT
 
