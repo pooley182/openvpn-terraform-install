@@ -65,5 +65,5 @@ variable "ovpn_config_directory" {
 
 variable "enable_mfa" {
   description = "Whether to install the OpenVPN server with MFA support"
-  default     = FALSE
+  default     = false
 }
