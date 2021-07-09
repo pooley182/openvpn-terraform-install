@@ -147,7 +147,7 @@ resource "null_resource" "openvpn_download_configurations" {
     mkdir -p ${var.ovpn_config_directory};
     scp -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
-        -i ${var.ssh_private_key_file} ${var.ec2_username}@${aws_instance.openvpn.public_ip}:/home/${var.ec2_username}/configs/* ${var.ovpn_config_directory}/
+        -i ${var.ssh_private_key_file} ${var.ec2_username}@${aws_instance.openvpn.public_ip}:/home/${var.ec2_username}/config/* ${var.ovpn_config_directory}/
     
 EOT
 
