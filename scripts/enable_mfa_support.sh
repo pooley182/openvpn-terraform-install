@@ -17,4 +17,6 @@ echo "account     include     system-auth" >> /etc/pam.d/openvpn
 echo "password    include     system-auth" >> /etc/pam.d/openvpn
 echo "session     include     system-auth" >> /etc/pam.d/openvpn
 
+echo "export MFA_ENABLED=TRUE" >> /etc/profile
+
 systemctl restart openvpn@server
