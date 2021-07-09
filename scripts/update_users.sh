@@ -87,10 +87,7 @@ do
     export CLIENT="${ovpn_user}"
     ./openvpn-install.sh
     
-    rm -f config/${openvpn_user}/${openvpn_user}.ovpn
-    if [ "$MFA_ENABLED" == "TRUE" ]; then
-      rm -f config/${openvpn_user}/${openvpn_user}.gauth.txt
-    fi
+    rm -rf config/${openvpn_user}
   fi
 done
 
